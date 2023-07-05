@@ -17,7 +17,7 @@ function preview() {
 
 # Function to explore GitHub
 function explorer() {
-	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --preview-window up:50% --header "$path") # Selection to check if it is a file or directory
+	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]") # Selection to check if it is a file or directory
 	response=$(gh api -X GET "/repos/$owner/$repo/contents/$path")
 	type_check=$(echo "$response" | jq -r 'type') # If object then preview, if array then open
 	path="$path/$selection"
@@ -29,21 +29,18 @@ function explorer() {
 	fi
 }
 
-# Read the URL as a command-line argument
-url="$1"
-
-# Check if the URL is provided
-if [[ -z $url ]]; then
-	echo "Please provide a GitHub URL or raw.githubusercontent URL as an argument."
+# Check if the $1 is provided
+if [[ -z $1 ]]; then
+	echo "Please provide a GitHub username to browse !"
 	exit 1
 else
-	owner=$(echo $url | cut -d '/' -f1)
-	repo=$(echo $url | cut -d '/' -f2)
-	path=$(echo $url | cut -d '/' -f3)
+	owner=$(echo $1 | cut -d '/' -f1)
+	repo=$(echo $1 | cut -d '/' -f2)
+	path=$(echo $1 | cut -d '/' -f3)
 
 	if [[ $owner -eq $repo ]]; then
 		path=""
-		repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --preview-window up:50% --header "$path")
+		repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]")
 		explorer
 	fi
 fi
