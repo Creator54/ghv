@@ -36,7 +36,7 @@ if [[ -z $1 ]]; then
 else
 	owner=$(echo $1 | cut -d '/' -f1)
 	repo=$(echo $1 | cut -d '/' -f2)
-	path=$(echo $1 | cut -d '/' -f3-)
+	path=$(echo $1 | cut -d '/' -f3- | sed 's/\/$//')
 
 	if [[ $owner == $repo ]]; then
 		path=""
