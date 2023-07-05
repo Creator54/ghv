@@ -42,7 +42,6 @@ function explorer() {
 	fi
 }
 
-
 # Read the URL as a command-line argument
 url="$1"
 
@@ -52,11 +51,11 @@ if [[ -z $url ]]; then
 	exit 1
 else
 	owner=$(echo $url | cut -d '/' -f1)
-	repo=$(echo $url| cut -d '/' -f2)
-	path=$(echo $url| cut -d '/' -f3)
+	repo=$(echo $url | cut -d '/' -f2)
+	path=$(echo $url | cut -d '/' -f3)
 
 	if [[ $owner -eq $repo ]]; then
-		repo=$(gh api /users/$owner/repos | jq -r '.[].name' | fzf)
+		repo=$(gh api "/users/$owner/repos?per_page=200&page=1" | jq -r '.[].name' | fzf)
 		explorer
 	fi
 fi
