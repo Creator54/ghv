@@ -2,9 +2,9 @@
 # A CLI tool to explore public repositories hosted on GitHub.
 
 # Check if required dependencies (jq, gh, fzf) are available
-deps_status=$(which jq gh fzf)
+deps_status=$(which jq gh fzf less)
 if [[ ! $deps_status ]]; then
-	echo "Please make sure jq, gh, and fzf are available in the environment!"
+	echo "Please make sure jq, gh, fzf, less are available in the environment!"
 	exit 1
 fi
 
@@ -12,12 +12,17 @@ fi
 function preview() {
 	# Retrieve and display file content using gh and jq
 	local file_content=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.content' | base64 -d)
-	echo "$file_content"
+
+	echo "$file_content" | less
 }
 
 # Function to explore GitHub
 function explorer() {
-	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]") # Selection to check if it is a file or directory
+	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]")
+
+	# Check if Ctrl+C was pressed while in the FZF menu
+	handle_interrupt
+
 	response=$(gh api -X GET "/repos/$owner/$repo/contents/$path")
 	type_check=$(echo "$response" | jq -r 'type') # If object then preview, if array then open
 	path="$path/$selection"
@@ -29,11 +34,25 @@ function explorer() {
 	fi
 }
 
-# Check if the $1 is provided
-if [[ -z $1 ]]; then
-	echo "Please provide a GitHub username to browse !"
-	exit 1
-else
+# Check if Ctrl+C was pressed
+function handle_interrupt() {
+	if [[ $? -eq 130 ]]; then
+		echo "Ctrl+C detected. Exiting..."
+		exit 0
+	fi
+}
+
+# Register the handle_interrupt function to handle Ctrl+C
+trap handle_interrupt SIGINT
+
+# Main script
+while true; do
+	# Check if the $1 is provided
+	if [[ -z $1 ]]; then
+		echo "Please provide a GitHub username to browse !"
+		exit 1
+	fi
+
 	owner=$(echo $1 | cut -d '/' -f1)
 	repo=$(echo $1 | cut -d '/' -f2)
 	path=$(echo $1 | cut -d '/' -f3- | sed 's/\/$//')
@@ -41,6 +60,16 @@ else
 	if [[ $owner == $repo ]]; then
 		path=""
 		repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]")
+
+		# Check if Ctrl+C was pressed while in the FZF menu
+		handle_interrupt
+
+		# Check if the selection is invalid and restart the loop
+		if [[ -z $repo ]]; then
+			continue
+		fi
+
 	fi
+
 	explorer
-fi
+done
