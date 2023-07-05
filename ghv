@@ -38,9 +38,9 @@ else
 	repo=$(echo $1 | cut -d '/' -f2)
 	path=$(echo $1 | cut -d '/' -f3)
 
-	if [[ $owner -eq $repo ]]; then
+	if [[ $owner == $repo ]]; then
 		path=""
 		repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]")
-		explorer
 	fi
+	explorer
 fi
