@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# A CLI tool to read text files hosted on GitHub.
+
+# Check if required dependencies (jq, gh) are available
+deps_status=$(which jq gh)
+if [[ ! $deps_status ]]; then
+	echo "Please make sure jq and gh are available in the environment!"
+	exit 1
+fi
+
+# Read the URL as a command-line argument
+url="$1"
+
+# Check if the URL is provided
+if [[ -z $url ]]; then
+	echo "Please provide a GitHub URL or raw.githubusercontent URL as an argument."
+	exit 1
+fi
+
+# Extract the repository owner, repository name, and file path from the URL
+if [[ $url =~ github\.com/([^/]+)/([^/]+)/blob/([^/]+)/(.+) ]]; then
+	owner="${BASH_REMATCH[1]}"
+	repo="${BASH_REMATCH[2]}"
+	path="${BASH_REMATCH[4]}"
+elif [[ $url =~ raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+) ]]; then
+	owner="${BASH_REMATCH[1]}"
+	repo="${BASH_REMATCH[2]}"
+	path="${BASH_REMATCH[4]}"
+else
+	echo "Invalid URL format. Please provide a valid GitHub URL or raw.githubusercontent URL."
+	exit 1
+fi
+
+# Retrieve the file content using gh and jq
+file_content=$(gh api -X GET /repos/"$owner"/"$repo"/contents/"$path" | jq --raw-output '.content')
+
+# Base64 decode the file content
+decoded_content=$(echo "$file_content" | base64 -d)
+
+# Print the file content
+echo "$decoded_content"
