@@ -47,9 +47,19 @@ trap handle_interrupt SIGINT
 
 # Main script
 while true; do
-	# Check if the $1 is provided
+	# Check if a GitHub username is provided as an argument
 	if [[ -z $1 ]]; then
-		echo "Please provide a GitHub username to browse !"
+		cat <<-USAGE
+			Usage: $0 <username/repo/folder>
+
+			A CLI tool to explore public repositories hosted on GitHub.
+
+			Example:
+			  $ $0 nixos
+			  $ $0 nixos/nix
+			  $ $0 nixos/nix/README.md
+
+		USAGE
 		exit 1
 	fi
 
