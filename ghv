@@ -18,9 +18,9 @@ function preview() {
 
 # Function to explore GitHub
 function explorer() {
-	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]")
+	repo_pwd="$repo/$(echo $path | sed 's#^/##')"
+	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo_pwd ]")
 
-	# Check if Ctrl+C was pressed while in the FZF menu
 	handle_interrupt
 
 	response=$(gh api -X GET "/repos/$owner/$repo/contents/$path")
@@ -61,7 +61,6 @@ while true; do
 		path=""
 		repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]")
 
-		# Check if Ctrl+C was pressed while in the FZF menu
 		handle_interrupt
 
 		# Check if the selection is invalid and restart the loop
