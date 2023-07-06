@@ -21,7 +21,7 @@ To use the tool, run the script with the following command:
 ./ghv nixos/nix
 ./ghv nixos/nix/README.md
 ./ghv https://github.com/nixos/nix/README.md
-
+./ghv https://github.com/nixos/nix/blob/master/README.md
 ```
 
 ## LICENSE

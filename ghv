@@ -59,13 +59,18 @@ while true; do
 			  $ $0 nixos/nix
 			  $ $0 nixos/nix/README.md
 			  $ $0 https://github.com/nixos/nix/README.md
+			  $ $0 https://github.com/nixos/nix/blob/master/README.md
 
 		USAGE
 		exit 1
 	fi
 
-	if echo $input | grep "http" &>/dev/null; then
-		input=$(echo $1 | cut -d'/' -f4-)
+	if echo "$input" | grep -q "blob"; then
+		input=$(echo "$input" | sed 's|/blob/[^/]*/|/|')
+	fi
+
+	if echo "$input" | grep -q "http"; then
+		input="$(echo "$input" | cut -d'/' -f4-)"
 	fi
 
 	owner=$(echo $input | cut -d '/' -f1)
