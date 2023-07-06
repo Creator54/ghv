@@ -10,15 +10,18 @@ Make sure you have the following dependencies installed in your environment:
 - gh
 - fzf
 - less
+- cat
 
 ## Usage
 
 To use the tool, run the script with the following command:
 
 ```bash
-./ghv <username>
-./ghv <username>/<repository>
-./ghv <username>/<repository>/<path>
+./ghv nixos
+./ghv nixos/nix
+./ghv nixos/nix/README.md
+./ghv https://github.com/nixos/nix/README.md
+
 ```
 
 ## LICENSE

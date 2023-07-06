@@ -44,10 +44,11 @@ function handle_interrupt() {
 # Register the handle_interrupt function to handle Ctrl+C
 trap handle_interrupt SIGINT
 
+input=$1
 # Main script
 while true; do
 	# Check if a GitHub username is provided as an argument
-	if [[ -z $1 ]]; then
+	if [[ -z $input ]]; then
 		cat <<-USAGE
 			Usage: $0 <username/repo/folder>
 
@@ -57,14 +58,19 @@ while true; do
 			  $ $0 nixos
 			  $ $0 nixos/nix
 			  $ $0 nixos/nix/README.md
+			  $ $0 https://github.com/nixos/nix/README.md
 
 		USAGE
 		exit 1
 	fi
 
-	owner=$(echo $1 | cut -d '/' -f1)
-	repo=$(echo $1 | cut -d '/' -f2)
-	path=$(echo $1 | cut -d '/' -f3- | sed 's/\/$//')
+	if echo $input | grep "http" &>/dev/null; then
+		input=$(echo $1 | cut -d'/' -f4-)
+	fi
+
+	owner=$(echo $input | cut -d '/' -f1)
+	repo=$(echo $input | cut -d '/' -f2)
+	path=$(echo $input | cut -d '/' -f3- | sed 's/\/$//')
 
 	if [[ $owner == $repo ]]; then
 		path=""
