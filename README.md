@@ -21,3 +21,6 @@ To use the tool, run the script with the following command:
 ./ghv <username>/<repository>/<path>
 ```
 
+## LICENSE
+
+Unlicense
