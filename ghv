@@ -17,12 +17,12 @@ function preview() {
 
 # Function to explore GitHub
 function explorer() {
+	response=$(gh api -X GET "/repos/$owner/$repo/contents/$path")
 	repo_pwd="$repo/$(echo $path | sed 's#^/##')"
-	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --header "$owner: [ $repo_pwd ]")
+	selection=$(echo $response | jq -r '.[].name' | fzf --header "$owner: [ $repo_pwd ]")
 
 	handle_interrupt
 
-	response=$(gh api -X GET "/repos/$owner/$repo/contents/$path")
 	type_check=$(echo "$response" | jq -r 'type') # If object then preview, if array then open
 	path="$path/$selection"
 
