@@ -1,25 +1,24 @@
 #!/usr/bin/env bash
 # A CLI tool to explore public repositories hosted on GitHub.
 
-# Check if required dependencies (jq, gh, fzf) are available
-deps_status=$(which jq gh fzf less cat)
+# Check if required dependencies are available
+deps_status=$(which jq gh fzf bat)
 if [[ ! $deps_status ]]; then
-	echo "Please make sure jq, gh, fzf, less and cat are available in the environment!"
+	echo "Please make sure jq, gh, fzf and bat are available in the environment!"
 	exit 1
 fi
 
 # Function to display file content
 function preview() {
-	# Retrieve and display file content using gh and jq
 	local file_content=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.content' | base64 -d)
 
-	echo "$file_content" | less
+	echo "$file_content" | bat --paging always
 }
 
 # Function to explore GitHub
 function explorer() {
 	repo_pwd="$repo/$(echo $path | sed 's#^/##')"
-	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo_pwd ]")
+	selection=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.[].name' | fzf --header "$owner: [ $repo_pwd ]")
 
 	handle_interrupt
 
@@ -32,6 +31,24 @@ function explorer() {
 	else
 		explorer
 	fi
+}
+
+# Function to display help menu
+function show_help() {
+	bat <<-USAGE
+		Usage: $0 <username/repo/folder>
+
+		A CLI tool to explore public repositories hosted on GitHub.
+
+		Example:
+		  $ $0 nixos
+		  $ $0 nixos/nix
+		  $ $0 nixos/nix/README.md
+		  $ $0 https://github.com/nixos/nix/README.md
+		  $ $0 https://github.com/nixos/nix/blob/master/README.md
+
+	USAGE
+	exit 1
 }
 
 # Check if Ctrl+C was pressed
@@ -49,20 +66,7 @@ input=$1
 while true; do
 	# Check if a GitHub username is provided as an argument
 	if [[ -z $input ]]; then
-		cat <<-USAGE
-			Usage: $0 <username/repo/folder>
-
-			A CLI tool to explore public repositories hosted on GitHub.
-
-			Example:
-			  $ $0 nixos
-			  $ $0 nixos/nix
-			  $ $0 nixos/nix/README.md
-			  $ $0 https://github.com/nixos/nix/README.md
-			  $ $0 https://github.com/nixos/nix/blob/master/README.md
-
-		USAGE
-		exit 1
+		show_help
 	fi
 
 	if echo "$input" | grep -q "blob"; then
@@ -79,7 +83,7 @@ while true; do
 
 	if [[ $owner == $repo ]]; then
 		path=""
-		repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --preview-window up:50% --header "$owner: [ $repo$path ]")
+		repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --header "$owner: [ $repo$path ]")
 
 		handle_interrupt
 

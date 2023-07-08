@@ -9,12 +9,9 @@ Make sure you have the following dependencies installed in your environment:
 - jq
 - gh
 - fzf
-- less
-- cat
+- bat
 
 ## Usage
-
-To use the tool, run the script with the following command:
 
 ```bash
 ./ghv nixos
