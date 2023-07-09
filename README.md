@@ -13,6 +13,8 @@ Make sure you have the following dependencies installed in your environment:
 
 ## Usage
 
+Authenticate with github once using ```gh auth login```
+
 ```bash
 ./ghv nixos
 ./ghv nixos/nix
