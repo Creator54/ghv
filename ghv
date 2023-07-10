@@ -74,11 +74,11 @@ function show_help() {
 		A CLI tool to explore public repositories hosted on GitHub.
 
 		Example:
-		  $ $0 nixos
-		  $ $0 nixos/nix
-		  $ $0 nixos/nix/README.md
-		  $ $0 https://github.com/nixos/nix/README.md
-		  $ $0 https://github.com/nixos/nix/blob/master/README.md
+		  $ $0 creator54
+		  $ $0 creator54/ghv
+		  $ $0 creator54/ghv/README.md
+		  $ $0 https://github.com/creator54/ghv/README.md
+		  $ $0 https://github.com/creator54/ghv/blob/main/README.md
 
 	USAGE
 	exit 1

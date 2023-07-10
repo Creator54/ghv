@@ -16,11 +16,11 @@ Make sure you have the following dependencies installed in your environment:
 Authenticate with github once using ```gh auth login```
 
 ```bash
-./ghv nixos
-./ghv nixos/nix
-./ghv nixos/nix/README.md
-./ghv https://github.com/nixos/nix/README.md
-./ghv https://github.com/nixos/nix/blob/master/README.md
+./ghv creator54
+./ghv creator54/ghv
+./ghv creator54/ghv/README.md
+./ghv https://github.com/creator54/ghv/README.md
+./ghv https://github.com/creator54/ghv/blob/main/README.md
 ```
 
 ## LICENSE
