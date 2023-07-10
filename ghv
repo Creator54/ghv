@@ -42,7 +42,21 @@ function explorer() {
 
 # Function to search user repos
 function show_user_repos() {
-	repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --header "$owner: [ $repo$path ]")
+	local error_file=$(mktemp)
+	local response=$(gh api "/users/$owner/repos?per_page=100&page=1" 2>$error_file | jq -r '.[].name' 2>$error_file)
+
+	if [[ -s "$error_file" ]]; then
+		rm $error_file
+		show_help
+		exit 1
+	fi
+
+	if [[ -z $response ]]; then
+		echo "Invalid username !"
+		exit 1
+	fi
+
+	repo=$(echo "$response" | fzf --header "$owner: [ $repo$path ]")
 	handle_interrupt
 }
 
