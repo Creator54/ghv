@@ -35,9 +35,10 @@ function explorer() {
 		show_user_repos
 	elif [[ $type_check == "object" ]]; then
 		preview
-	else
-		explorer
+		path="$(echo "$path" | sed 's/\/[^/]*\/[^/]*$//')"
 	fi
+
+	explorer
 }
 
 # Function to search user repos
