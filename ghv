@@ -15,22 +15,35 @@ function preview() {
 	echo "$file_content" | bat --paging always
 }
 
-# Function to explore GitHub
+# Function to explore inside user repos
 function explorer() {
 	response=$(gh api -X GET "/repos/$owner/$repo/contents/$path")
 	repo_pwd="$repo/$(echo $path | sed 's#^/##')"
-	selection=$(echo $response | jq -r '.[].name' | fzf --header "$owner: [ $repo_pwd ]")
+	selection=$(echo "$(echo $response | jq -r '.[].name' && echo "../")" | fzf --header "$owner: [ $repo_pwd ]")
 
 	handle_interrupt
 
-	type_check=$(echo "$response" | jq -r 'type') # If object then preview, if array then open
-	path="$path/$selection"
+	if [[ $selection == "../" ]]; then
+		path="$(echo "$path" | sed 's/\/[^/]*$//')"
+	else
+		path="$path/$selection"
+	fi
 
-	if [[ $type_check == "object" ]]; then
+	type_check=$(echo "$response" | jq -r 'type') # If object then preview, if array then open
+
+	if [[ $path == "" ]]; then
+		show_user_repos
+	elif [[ $type_check == "object" ]]; then
 		preview
 	else
 		explorer
 	fi
+}
+
+# Function to search user repos
+function show_user_repos() {
+	repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --header "$owner: [ $repo$path ]")
+	handle_interrupt
 }
 
 # Function to display help menu
@@ -83,10 +96,7 @@ while true; do
 
 	if [[ $owner == $repo ]]; then
 		path=""
-		repo=$(gh api "/users/$owner/repos?per_page=100&page=1" | jq -r '.[].name' | fzf --header "$owner: [ $repo$path ]")
-
-		handle_interrupt
-
+		show_user_repos
 		# Check if the selection is invalid and restart the loop
 		if [[ -z $repo ]]; then
 			continue
