@@ -10,16 +10,19 @@ fi
 
 # Function to display file content
 function preview() {
-	local file_content=$(gh api -X GET "/repos/$owner/$repo/contents/$path" | jq -r '.content' | base64 -d)
+	local stderr=$(mktemp)
+	local file_content=$(gh api -X GET "/repos/$owner/$repo/contents/$path" 2>$stderr | jq -r '.content' 2>$stderr | base64 -d)
 
 	echo "$file_content" | bat --paging always
+	rm $stderr
 }
 
 # Function to explore inside user repos
 function explorer() {
-	response=$(gh api -X GET "/repos/$owner/$repo/contents/$path")
+	local stderr=$(mktemp)
+	response=$(gh api -X GET "/repos/$owner/$repo/contents/$path" 2>$stderr)
 	repo_pwd="$repo/$(echo $path | sed 's#^/##')"
-	selection=$(echo "$(echo $response | jq -r '.[].name' && echo "../")" | fzf --header "$owner: [ $repo_pwd ]")
+	selection=$(echo "$(echo $response | jq -r '.[].name' 2>$stderr && echo "../")" | fzf --header "$owner: [ $repo_pwd ]")
 
 	handle_interrupt
 
@@ -29,25 +32,27 @@ function explorer() {
 		path="$path/$selection"
 	fi
 
-	type_check=$(echo "$response" | jq -r 'type') # If object then preview, if array then open
+	type_check=$(echo "$(gh api -X GET "/repos/$owner/$repo/contents/$path" 2>$stderr)" | jq -r 'type' 2>$stderr) # If object then preview, if array then open
 
 	if [[ $path == "" ]]; then
 		show_user_repos
 	elif [[ $type_check == "object" ]]; then
 		preview
-		path="$(echo "$path" | sed 's/\/[^/]*\/[^/]*$//')"
+		path="$(echo "$path" | sed 's/\/[^/]*$//')"
 	fi
+
+	rm $stderr
 
 	explorer
 }
 
 # Function to search user repos
 function show_user_repos() {
-	local error_file=$(mktemp)
-	local response=$(gh api "/users/$owner/repos?per_page=100&page=1" 2>$error_file | jq -r '.[].name' 2>$error_file)
+	local stderr=$(mktemp)
+	local response=$(gh api "/users/$owner/repos?per_page=100&page=1" 2>$stderr | jq -r '.[].name' 2>$stderr)
 
-	if [[ -s "$error_file" ]]; then
-		rm $error_file
+	if [[ -s "$stderr" ]]; then
+		rm $stderr
 		show_help
 		exit 1
 	fi
