@@ -23,6 +23,10 @@ Authenticate with github once using ```gh auth login```
 ./ghv https://github.com/creator54/ghv/blob/main/README.md
 ```
 
+## Current Limitations:
+* shows only 100 repositories(max) present for the username
+* files except text/markdown is not properly handled
+
 ## LICENSE
 
 Unlicense
